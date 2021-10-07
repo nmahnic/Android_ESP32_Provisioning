@@ -1,0 +1,11 @@
+<resources>
+    <string name="app_name">Basic_ESP_Provisioning</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="password">Contraseña</string>
+    <string name="user">Nombre</string>
+    <string name="name">Nombre</string>
+    <string name="ssid">SSID</string>
+    <string name="ssid_name">Nombre de la Red</string>
+    <string name="success">Success</string>
+    <string name="fail">Fail</string>
+</resources>

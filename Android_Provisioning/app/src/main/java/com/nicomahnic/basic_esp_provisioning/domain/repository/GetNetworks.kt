@@ -20,7 +20,8 @@ class GetNetworks @Inject constructor(
         try{
             Log.d("NM", "GET NETWORKS REQUEST")
             val res = apiHelper.getNetworksReq()
-            Log.d("NM", "Status Response ${res.data}")
+            Log.d("NM", "Status Response  -> networks=${res.networks}")
+            Log.d("NM", "Status Response  -> quality=${res.quality}")
 
             emit(DataState.Success(txnResponseMapper.mapFromEntity(res)))
         } catch (e: Exception){

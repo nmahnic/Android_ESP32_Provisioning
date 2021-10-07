@@ -18,9 +18,14 @@ data class GetNetworksResponseNetworkEntity(
         @Expose
         override val macAddress: String,
 
-        @SerializedName("data")
+        @SerializedName("networks")
         @Expose
-        val data: List<String>?
+        val networks: List<String>?,
+
+        @SerializedName("quality")
+        @Expose
+        val quality: List<String>?
+
 ) : TxnResponseNetworkEntity()
 
 data class SetCredentialsResponseNetworkEntity(

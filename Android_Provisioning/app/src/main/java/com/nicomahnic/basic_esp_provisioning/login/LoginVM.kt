@@ -20,6 +20,12 @@ class LoginVM @ViewModelInject constructor(
 ) : BaseViewModel<LoginDataState, LoginViewEffect, LoginViewEvent>() {
 
 
+    init {
+        viewState = LoginDataState(
+            state = LoginViewState.Initial
+        )
+    }
+
     override fun process(viewEvent: LoginViewEvent) {
         super.process(viewEvent)
         when (viewEvent) {
@@ -31,6 +37,10 @@ class LoginVM @ViewModelInject constructor(
                             when (res) {
                                 is DataState.Success -> {
                                     viewEffect = LoginViewEffect.SetOK_GetNetworks(res.data.macAddress)
+                                    viewState = viewState.copy(
+                                        data = res.data.networks,
+                                        state = LoginViewState.Scanned
+                                    )
                                 }
                                 is DataState.Failure -> {
                                     viewEffect = LoginViewEffect.SetFAIL_GetNetworks

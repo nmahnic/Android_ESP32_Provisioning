@@ -123,15 +123,8 @@ void WiFiManager::setupConfigPortal() {
   dnsServer->start(DNS_PORT, "*", WiFi.softAPIP());
 
   /* Setup web pages: root, wifi config pages, SO captive portal detectors and not found. */
-  server->on("/", std::bind(&WiFiManager::handleRoot, this));
   server->on("/wifi", std::bind(&WiFiManager::handleWifi, this, true));
-  server->on("/0wifi", std::bind(&WiFiManager::handleWifi, this, false));
   server->on("/wifisave", std::bind(&WiFiManager::handleWifiSave, this));
-  server->on("/i", std::bind(&WiFiManager::handleInfo, this));
-  server->on("/r", std::bind(&WiFiManager::handleReset, this));
-  //server->on("/generate_204", std::bind(&WiFiManager::handle204, this));  //Android/Chrome OS captive portal check.
-  server->on("/fwlink", std::bind(&WiFiManager::handleRoot, this));  //Microsoft captive portal. Maybe not needed. Might be handled by notFound handler.
-  server->onNotFound (std::bind(&WiFiManager::handleNotFound, this));
   server->begin(); // Web server start
   DEBUG_WM(F("HTTP server started"));
 
@@ -405,31 +398,6 @@ void WiFiManager::setBreakAfterConfig(boolean shouldBreak) {
   _shouldBreakAfterConfig = shouldBreak;
 }
 
-/** Handle root or redirect to captive portal */
-void WiFiManager::handleRoot() {
-  DEBUG_WM(F("Handle root"));
-  if (captivePortal()) { // If caprive portal redirect instead of displaying the page.
-    return;
-  }
-
-  String page = FPSTR(HTTP_HEAD);
-  page.replace("{v}", "Options");
-  page += FPSTR(HTTP_SCRIPT);
-  page += FPSTR(HTTP_STYLE);
-  page += _customHeadElement;
-  page += FPSTR(HTTP_HEAD_END);
-  page += "<h1>";
-  page += _apName;
-  page += "</h1>";
-  page += F("<h3>WiFiManager</h3>");
-  page += FPSTR(HTTP_PORTAL_OPTIONS);
-  page += FPSTR(HTTP_END);
-
-  server->sendHeader("Content-Length", String(page.length()));
-  server->send(200, "text/html", page);
-//  server->send(200, "application/json", "{\"message\":\"Not found\"}");
-
-}
 
 /** Wifi config page handler */
 void WiFiManager::handleWifi(boolean scan) {
@@ -485,7 +453,6 @@ void WiFiManager::handleWifi(boolean scan) {
         int quality = getRSSIasQuality(WiFi.RSSI(indices[i]));
 
         if (_minimumQuality == -1 || _minimumQuality < quality) {
-          String item = FPSTR(HTTP_ITEM);
           String rssiQ;
           rssiQ += quality;
           networksSSID.add(WiFi.SSID(indices[i]));
@@ -562,107 +529,6 @@ void WiFiManager::handleWifiSave() {
   DEBUG_WM(F("Sent wifi save page"));
   connect = true; //signal ready to connect/reset
 }
-
-/** Handle the info page */
-void WiFiManager::handleInfo() {
-  DEBUG_WM(F("Info"));
-
-  String page = FPSTR(HTTP_HEAD);
-  page.replace("{v}", "Info");
-  page += FPSTR(HTTP_SCRIPT);
-  page += FPSTR(HTTP_STYLE);
-  page += _customHeadElement;
-  page += FPSTR(HTTP_HEAD_END);
-  page += F("<dl>");
-  page += F("<dt>Chip ID</dt><dd>");
-  page += ESP_getChipId();
-  page += F("</dd>");
-  page += F("<dt>Flash Chip ID</dt><dd>");
-#if defined(ESP8266)
-  page += ESP.getFlashChipId();
-#else
-  // TODO
-  page += F("TODO");
-#endif
-  page += F("</dd>");
-  page += F("<dt>IDE Flash Size</dt><dd>");
-  page += ESP.getFlashChipSize();
-  page += F(" bytes</dd>");
-  page += F("<dt>Real Flash Size</dt><dd>");
-#if defined(ESP8266)
-  page += ESP.getFlashChipRealSize();
-#else
-  // TODO
-  page += F("TODO");
-#endif
-  page += F(" bytes</dd>");
-  page += F("<dt>Soft AP IP</dt><dd>");
-  page += WiFi.softAPIP().toString();
-  page += F("</dd>");
-  page += F("<dt>Soft AP MAC</dt><dd>");
-  page += WiFi.softAPmacAddress();
-  page += F("</dd>");
-  page += F("<dt>Station MAC</dt><dd>");
-  page += WiFi.macAddress();
-  page += F("</dd>");
-  page += F("</dl>");
-  page += FPSTR(HTTP_END);
-
-  server->sendHeader("Content-Length", String(page.length()));
-  server->send(200, "text/html", page);
-
-  DEBUG_WM(F("Sent info page"));
-}
-
-/** Handle the reset page */
-void WiFiManager::handleReset() {
-  DEBUG_WM(F("Reset"));
-
-  String page = FPSTR(HTTP_HEAD);
-  page.replace("{v}", "Info");
-  page += FPSTR(HTTP_SCRIPT);
-  page += FPSTR(HTTP_STYLE);
-  page += _customHeadElement;
-  page += FPSTR(HTTP_HEAD_END);
-  page += F("Module will reset in a few seconds.");
-  page += FPSTR(HTTP_END);
-
-  server->sendHeader("Content-Length", String(page.length()));
-  server->send(200, "text/html", page);
-
-  DEBUG_WM(F("Sent reset page"));
-  delay(5000);
-#if defined(ESP8266)
-  ESP.reset();
-#else
-  ESP.restart();
-#endif
-  delay(2000);
-}
-
-void WiFiManager::handleNotFound() {
-  if (captivePortal()) { // If captive portal redirect instead of displaying the error page.
-    return;
-  }
-  String message = "File Not Found\n\n";
-  message += "URI: ";
-  message += server->uri();
-  message += "\nMethod: ";
-  message += ( server->method() == HTTP_GET ) ? "GET" : "POST";
-  message += "\nArguments: ";
-  message += server->args();
-  message += "\n";
-
-  for ( uint8_t i = 0; i < server->args(); i++ ) {
-    message += " " + server->argName ( i ) + ": " + server->arg ( i ) + "\n";
-  }
-  server->sendHeader("Cache-Control", "no-cache, no-store, must-revalidate");
-  server->sendHeader("Pragma", "no-cache");
-  server->sendHeader("Expires", "-1");
-  server->sendHeader("Content-Length", String(message.length()));
-  server->send ( 404, "text/plain", message );
-}
-
 
 /** Redirect to captive portal if we got a request for another domain. Return true in that case so the page handler do not try to handle the request again. */
 boolean WiFiManager::captivePortal() {

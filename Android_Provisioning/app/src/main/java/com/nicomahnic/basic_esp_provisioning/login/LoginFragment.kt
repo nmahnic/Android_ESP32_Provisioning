@@ -13,6 +13,7 @@ import com.nicomahnic.basic_esp_provisioning.databinding.FragmentLoginBinding
 import dagger.hilt.android.AndroidEntryPoint
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import android.provider.Settings
+import android.widget.ArrayAdapter
 import androidx.activity.result.contract.ActivityResultContracts.*
 
 
@@ -27,7 +28,7 @@ class LoginFragment : BaseFragment<LoginDataState, LoginViewEffect, LoginViewEve
 
     private val responseLauncher = registerForActivityResult(StartActivityForResult()){ activityRes ->
 //        if(activityRes.resultCode == RESULT_OK){
-            Thread.sleep(2000)
+//            Thread.sleep(2000)
             viewModel.process(LoginViewEvent.ScanWiFi)
 //        }
     }
@@ -55,7 +56,18 @@ class LoginFragment : BaseFragment<LoginDataState, LoginViewEffect, LoginViewEve
     }
 
     override fun renderViewState(viewState: LoginDataState) {
-        TODO("Not yet implemented")
+        when(viewState.state){
+            is LoginViewState.Scanned -> {
+                binding.spinner.let{
+                    val adapter = ArrayAdapter(requireContext(),
+                        android.R.layout.simple_spinner_item, viewState.data!!)
+                    binding.spinner.adapter = adapter
+                }
+            }
+            else -> {
+                Log.d("NM", "LOGIN VIEW STATE -> NOT DEFINED")
+            }
+        }
     }
 
     override fun renderViewEffect(viewEffect: LoginViewEffect) {

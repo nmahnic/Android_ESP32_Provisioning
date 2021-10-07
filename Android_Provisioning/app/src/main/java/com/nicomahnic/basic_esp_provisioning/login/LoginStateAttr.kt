@@ -6,7 +6,7 @@ import java.lang.Exception
 // STATE
 data class LoginDataState(
     val exception: Exception? = null,
-    val data: TransactionResponse? = null,
+    val data: List<String>? = null,
     val state: LoginViewState
 )
 
@@ -27,7 +27,7 @@ sealed class LoginViewEvent {
 // VIEW STATE
 sealed class LoginViewState {
     object Initial: LoginViewState()
-    object Consumed: LoginViewState()
+    object Scanned: LoginViewState()
     object Success: LoginViewState()
     object Wrong: LoginViewState()
     object Failure: LoginViewState()

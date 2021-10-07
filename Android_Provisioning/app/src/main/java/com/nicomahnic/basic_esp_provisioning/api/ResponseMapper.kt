@@ -11,7 +11,8 @@ class GetNetworksResponseMapper @Inject constructor():
 
     override fun mapFromEntity(entity: GetNetworksResponseNetworkEntity): GetNetworksResponse {
         return GetNetworksResponse(
-                data = entity.data,
+                networks = entity.networks,
+                quality = entity.quality,
                 responseCode = entity.responseCode,
                 macAddress = entity.macAddress
         )
@@ -19,7 +20,8 @@ class GetNetworksResponseMapper @Inject constructor():
 
     override fun mapToEntity(domainModel: GetNetworksResponse): GetNetworksResponseNetworkEntity {
         return GetNetworksResponseNetworkEntity(
-                data = domainModel.data,
+                networks = domainModel.networks,
+                quality = domainModel.quality,
                 responseCode = domainModel.responseCode,
                 macAddress = domainModel.macAddress
         )

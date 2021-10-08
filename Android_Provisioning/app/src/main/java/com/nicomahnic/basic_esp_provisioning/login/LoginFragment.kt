@@ -3,7 +3,11 @@ package com.nicomahnic.basic_esp_provisioning.login
 import android.app.Activity.RESULT_OK
 import android.content.Context
 import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import android.util.Log
 import android.view.View
 import androidx.fragment.app.viewModels
@@ -15,6 +19,7 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import android.provider.Settings
 import android.widget.ArrayAdapter
 import androidx.activity.result.contract.ActivityResultContracts.*
+import com.nicomahnic.basic_esp_provisioning.utils.Utils
 
 
 @ExperimentalCoroutinesApi
@@ -26,11 +31,8 @@ class LoginFragment : BaseFragment<LoginDataState, LoginViewEffect, LoginViewEve
     override val viewModel: LoginVM by viewModels()
     private lateinit var binding: FragmentLoginBinding
 
-    private val responseLauncher = registerForActivityResult(StartActivityForResult()){ activityRes ->
-//        if(activityRes.resultCode == RESULT_OK){
-//            Thread.sleep(2000)
-            viewModel.process(LoginViewEvent.ScanWiFi)
-//        }
+    private val responseLauncher = registerForActivityResult(StartActivityForResult()){
+        viewModel.process(LoginViewEvent.ScanWiFi)
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -63,6 +65,14 @@ class LoginFragment : BaseFragment<LoginDataState, LoginViewEffect, LoginViewEve
                         android.R.layout.simple_spinner_item, viewState.data!!)
                     binding.spinner.adapter = adapter
                 }
+            }
+            is LoginViewState.Connected -> {
+                Utils.checkForInternet(requireContext())
+                Handler().postDelayed({
+                    viewModel.process(
+                        LoginViewEvent.SetNewDevice("NUEVO DISP")
+                    )
+                }, 10000)
             }
             else -> {
                 Log.d("NM", "LOGIN VIEW STATE -> NOT DEFINED")

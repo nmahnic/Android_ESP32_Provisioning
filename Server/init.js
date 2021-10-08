@@ -12,7 +12,7 @@ app.post('/User',function(req,res){
     res.json(
         {
             responseCode:0,
-            responseMessage:"hola"
+            macAddress:"hola"
         }
     )
 });

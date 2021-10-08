@@ -1,14 +1,12 @@
-package com.nicomahnic.basic_esp_provisioning.api
+package com.nicomahnic.basic_esp_provisioning.apis.apiESP
 
+import com.nicomahnic.basic_esp_provisioning.apis.apiESP.networkModels.GetNetworksResponseNetworkEntity
+import com.nicomahnic.basic_esp_provisioning.apis.apiESP.networkModels.SetCredentialsResponseNetworkEntity
 import javax.inject.Inject
 
 class ApiHelperImpl @Inject constructor(
     private val apiService: ApiService
 ): ApiHelper {
-
-//    override suspend fun postRequest(req: CreatePaymentNetworkEntity) : CreatePaymentResponseNetworkEntity = apiService.postRequest(req)
-
-//    override suspend fun deleteRequest(req: DeletePaymentNetworkEntity) : CancelPaymentResponseNetworkEntity = apiService.deleteRequest(req)
 
     override suspend fun getNetworksReq() : GetNetworksResponseNetworkEntity = apiService.getNetworksReq()
 

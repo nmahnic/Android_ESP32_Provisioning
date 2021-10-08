@@ -1,9 +1,9 @@
 package com.nicomahnic.basic_esp_provisioning.domain.repository
 
 import android.util.Log
-import com.nicomahnic.basic_esp_provisioning.api.ApiHelper
+import com.nicomahnic.basic_esp_provisioning.apis.apiESP.ApiHelper
 import com.nicomahnic.basic_esp_provisioning.utils.DataState
-import com.nicomahnic.basic_esp_provisioning.api.GetNetworksResponseMapper
+import com.nicomahnic.basic_esp_provisioning.apis.apiESP.GetNetworksResponseMapper
 import com.nicomahnic.basic_esp_provisioning.domain.models.response.GetNetworksResponse
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow

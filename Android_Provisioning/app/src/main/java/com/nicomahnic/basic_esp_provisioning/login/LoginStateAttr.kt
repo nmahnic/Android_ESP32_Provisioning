@@ -22,13 +22,12 @@ sealed class LoginViewEffect {
 sealed class LoginViewEvent {
     object ScanWiFi: LoginViewEvent()
     data class SaveCredentials(val ssid: String, val passwd: String): LoginViewEvent()
+    data class SetNewDevice(val dato: String): LoginViewEvent()
 }
 
 // VIEW STATE
 sealed class LoginViewState {
     object Initial: LoginViewState()
     object Scanned: LoginViewState()
-    object Success: LoginViewState()
-    object Wrong: LoginViewState()
-    object Failure: LoginViewState()
+    object Connected: LoginViewState()
 }

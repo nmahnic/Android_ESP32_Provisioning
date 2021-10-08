@@ -4,7 +4,9 @@ import android.util.Log
 import androidx.hilt.lifecycle.ViewModelInject
 import androidx.lifecycle.viewModelScope
 import com.nicomahnic.basic_esp_provisioning.core.BaseViewModel
+import com.nicomahnic.basic_esp_provisioning.domain.models.request.PostNewDeviceRequest
 import com.nicomahnic.basic_esp_provisioning.domain.repository.GetNetworks
+import com.nicomahnic.basic_esp_provisioning.domain.repository.PostNewDevice
 import com.nicomahnic.basic_esp_provisioning.domain.repository.SetCredentials
 import com.nicomahnic.basic_esp_provisioning.utils.DataState
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -16,7 +18,8 @@ import kotlinx.coroutines.launch
 @ExperimentalCoroutinesApi
 class LoginVM @ViewModelInject constructor(
     private val getNetworks: GetNetworks,
-    private val setCredentials: SetCredentials
+    private val setCredentials: SetCredentials,
+    private val setNewDevice: PostNewDevice
 ) : BaseViewModel<LoginDataState, LoginViewEffect, LoginViewEvent>() {
 
 
@@ -58,9 +61,29 @@ class LoginVM @ViewModelInject constructor(
                             when (res) {
                                 is DataState.Success -> {
                                     viewEffect = LoginViewEffect.SetOK_SaveCredentials(res.data.macAddress.toString())
+                                    viewState = viewState.copy(
+                                        state = LoginViewState.Connected
+                                    )
                                 }
                                 is DataState.Failure -> {
                                     viewEffect = LoginViewEffect.SetFAIL_SaveCredentials
+                                }
+                            }
+                        }.launchIn(viewModelScope)
+                }
+            }
+            is LoginViewEvent.SetNewDevice -> {
+                Log.d("NM","event: SetNewDevice -> dato1:${viewEvent.dato}")
+                viewModelScope.launch {
+                    setNewDevice.request(PostNewDeviceRequest(viewEvent.dato))
+                        .catch { exception -> Log.d("NM", "exception -> $exception") }
+                        .onEach { res ->
+                            when (res) {
+                                is DataState.Success -> {
+
+                                }
+                                is DataState.Failure -> {
+
                                 }
                             }
                         }.launchIn(viewModelScope)

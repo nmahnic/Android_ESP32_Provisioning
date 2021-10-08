@@ -55,7 +55,7 @@ WiFiServer server(WEB_SERVER_PORT);
 String WiFi_SSID = "";
 String WiFi_psk = "";
 
-String ApiHost = "http://192.168.68.136:3000";
+String ApiHost = "http://192.168.0.37:3000";
 
 bool WiFiPresent = false;
 

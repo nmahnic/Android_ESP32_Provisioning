@@ -1,5 +1,7 @@
-package com.nicomahnic.basic_esp_provisioning.api
+package com.nicomahnic.basic_esp_provisioning.apis.apiESP
 
+import com.nicomahnic.basic_esp_provisioning.apis.apiESP.networkModels.GetNetworksResponseNetworkEntity
+import com.nicomahnic.basic_esp_provisioning.apis.apiESP.networkModels.SetCredentialsResponseNetworkEntity
 import com.nicomahnic.basic_esp_provisioning.utils.EntityMapper
 import com.nicomahnic.basic_esp_provisioning.domain.models.response.GetNetworksResponse
 import com.nicomahnic.basic_esp_provisioning.domain.models.response.SetCredentialsResponse

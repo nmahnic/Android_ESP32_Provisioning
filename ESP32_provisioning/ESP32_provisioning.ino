@@ -19,14 +19,7 @@
 
 #include <WiFi.h>
 
-#include <esp_wps.h>
-#include <esp_smartconfig.h>
-
-#define ESP_WPS_MODE WPS_TYPE_PBC
-
-esp_wps_config_t config = WPS_CONFIG_INIT_DEFAULT(ESP_WPS_MODE);
-
-
+#include <ArduinoJson.h>
 #include <WiFiClientSecure.h>
 #include <HTTPClient.h>
 
@@ -62,7 +55,7 @@ WiFiServer server(WEB_SERVER_PORT);
 String WiFi_SSID = "";
 String WiFi_psk = "";
 
-
+String ApiHost = "http://192.168.68.136:3000";
 
 bool WiFiPresent = false;
 
@@ -85,40 +78,13 @@ void setup() {
 
   WiFiPresent = false;
 
-//  if (WiFiPresent == false)
-//  {
-//    // do SmartConfig
-//#define WAITFORSTART 15
-//#define WAITFORCONNECT 20
-//
-//    WiFiPresent = SmartConfigGetIP(WAITFORSTART, WAITFORCONNECT);
-//
-//  } // if not already programmed before
-
-
-
-
-
-//  if (WiFiPresent != true)
-//  {
-//#define WPSTIMEOUTSECONDS 60
-//    // now try WPS Button
-//
-//    WiFiPresent = WPSGetIP(WPSTIMEOUTSECONDS);
-//
-//  }
-
-  if (WiFiPresent != true)
-  {
+  if (WiFiPresent != true){
 #define APTIMEOUTSECONDS 60
     WiFiPresent = localAPGetIP(APTIMEOUTSECONDS);
   }
 
 
-  if (WiFiPresent == true)
-  {
-
-
+  if (WiFiPresent == true){
     Serial.println("-------------");
     Serial.println("WiFi Connected");
     Serial.println("-------------");
@@ -129,9 +95,7 @@ void setup() {
 
     Serial.print("psk=");
     Serial.println(WiFi_psk);
-  }
-  else
-  {
+  }else{
     Serial.println("-------------");
     Serial.println("WiFi NOT Connected");
     Serial.println("-------------");
@@ -141,5 +105,42 @@ void setup() {
 
 void loop() {
   // put your main code here, to run repeatedly:
+  Serial.println("Get to server");
+  postWhoAmI(WiFi.macAddress());
+  delay(2000); 
+}
 
+void getRoot(){
+  HTTPClient http;
+  http.begin(ApiHost + "/");
+  int httpCode = http.GET();
+  processResponse(httpCode, http);
+}
+
+void postWhoAmI(String newData){
+  HTTPClient http;
+  http.begin(ApiHost + "/WhoAmI");
+  http.addHeader("Content-Type", "application/json");
+  
+  String message = "";
+  StaticJsonDocument<300> jsonDoc;
+  jsonDoc["data"] = newData;
+  serializeJson(jsonDoc, message);
+  
+  int httpCode = http.POST(message);
+  processResponse(httpCode, http);
+}
+
+void processResponse(int httpCode, HTTPClient& http){
+  if (httpCode > 0) {
+    Serial.printf("Response code: %d\t", httpCode);
+
+    if (httpCode == HTTP_CODE_OK) {
+      String payload = http.getString();
+      Serial.println(payload);
+    }
+  }else {
+    Serial.printf("Request failed, error: %s\n", http.errorToString(httpCode).c_str());
+  }
+  http.end();
 }

@@ -55,7 +55,7 @@ WiFiServer server(WEB_SERVER_PORT);
 String WiFi_SSID = "";
 String WiFi_psk = "";
 
-String ApiHost = "http://192.168.0.37:3000";
+String ApiHost = "http://192.168.0.30:5000";
 
 bool WiFiPresent = false;
 
@@ -106,13 +106,21 @@ void setup() {
 void loop() {
   // put your main code here, to run repeatedly:
   Serial.println("Get to server");
-  postWhoAmI(WiFi.macAddress());
+//  postWhoAmI(WiFi.macAddress());
+  getUsers();
   delay(2000); 
 }
 
 void getRoot(){
   HTTPClient http;
   http.begin(ApiHost + "/");
+  int httpCode = http.GET();
+  processResponse(httpCode, http);
+}
+
+void getUsers(){
+  HTTPClient http;
+  http.begin(ApiHost + "/user/");
   int httpCode = http.GET();
   processResponse(httpCode, http);
 }

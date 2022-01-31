@@ -401,7 +401,11 @@ void WiFiManager::setBreakAfterConfig(boolean shouldBreak) {
 
 /** Wifi config page handler */
 void WiFiManager::handleWifi(boolean scan) {
-  DynamicJsonDocument doc(1024);
+  DynamicJsonDocument doc(5000);
+  doc["responseCode"] = 0;
+  String mac = WiFi.macAddress();
+  doc["macAddress"] = mac;
+  DEBUG_WM("MASH -> MAC:"+mac);
   JsonArray networksSSID = doc.createNestedArray("networks");
   JsonArray networksQuality = doc.createNestedArray("quality");
 
@@ -465,10 +469,6 @@ void WiFiManager::handleWifi(boolean scan) {
     }
   }
 
-  doc["responseCode"] = 0;
-  String mac = WiFi.macAddress();
-  doc["macAddress"] = String(mac);
-  DEBUG_WM("MASH -> MAC:"+mac);
   String mashJson = "";
   serializeJson(doc, mashJson);
   server -> send(200, "application/json",  mashJson);

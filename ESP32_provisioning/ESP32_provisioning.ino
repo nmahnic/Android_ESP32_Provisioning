@@ -22,6 +22,8 @@
 #include <ArduinoJson.h>
 #include <WiFiClientSecure.h>
 #include <HTTPClient.h>
+//#include <EEPROM.h>
+#include <Preferences.h>
 
 // AP Variables
 
@@ -55,9 +57,11 @@ WiFiServer server(WEB_SERVER_PORT);
 String WiFi_SSID = "";
 String WiFi_psk = "";
 
-String ApiHost = "http://192.168.0.30:5000";
+String ApiHost = "http://192.168.0.127:5000";
 
 bool WiFiPresent = false;
+
+Preferences preferences;
 
 void setup() {
 
@@ -68,8 +72,14 @@ void setup() {
   Serial.println("--------------------");
   Serial.println("WiFi Provisioning ESP32 Software Demo");
   Serial.println("--------------------");
-  Serial.print("Version: 1.0");
+  Serial.println("Version: 1.0");
 
+  preferences.begin("credentials", false);
+  String ssid = preferences.getString("ssid", ""); 
+  String passwd = preferences.getString("password", "");
+  Serial.println("SSID guadado:" + ssid);
+  Serial.println("PASSWD guadado:" + passwd);
+  
 
   Serial.print("Compiled at:");
   Serial.print (__TIME__);
@@ -77,6 +87,10 @@ void setup() {
   Serial.println(__DATE__);
 
   WiFiPresent = false;
+
+  if(ssid != "" && passwd != ""){
+    WiFiPresent = true;
+  }
 
   if (WiFiPresent != true){
 #define APTIMEOUTSECONDS 60
@@ -92,9 +106,18 @@ void setup() {
     WiFi_psk = WiFi.psk();
     Serial.print("SSID=");
     Serial.println(WiFi_SSID);
-
     Serial.print("psk=");
     Serial.println(WiFi_psk);
+
+    preferences.putString("ssid", WiFi_SSID);
+    preferences.putString("password", WiFi_psk);
+
+
+    String ssid = preferences.getString("ssid", ""); 
+    String passwd = preferences.getString("password", "");
+    Serial.println("SSID guadado:" + ssid);
+    Serial.println("PASSWD guadado:" + passwd);
+
   }else{
     Serial.println("-------------");
     Serial.println("WiFi NOT Connected");

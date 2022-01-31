@@ -6,15 +6,6 @@
 // June 2018
 //
 
-
-#if defined(ARDUINO) && ARDUINO >= 100
-// No extras
-#elif defined(ARDUINO) // pre-1.0
-// No extras
-#elif defined(ESP_PLATFORM)
-#include "arduinoish.hpp"
-#endif
-
 #define BC24DEBUG
 
 #include <WiFi.h>
@@ -90,6 +81,14 @@ void setup() {
 
   if(ssid != "" && passwd != ""){
     WiFiPresent = true;
+    WiFi.mode(WIFI_STA);
+    WiFi.begin(ssid.c_str(), passwd.c_str());
+    Serial.print("Connecting to WiFi ..");
+    while (WiFi.status() != WL_CONNECTED) {
+      Serial.print('.');
+      delay(1000);
+    }
+    Serial.println(WiFi.localIP());
   }
 
   if (WiFiPresent != true){

@@ -27,6 +27,7 @@
 #define LED_PIN 32
 #define CURRENT 34              //ADC1 porque el ADC2 no funciona con el WIFI
 #define VOLTAGE 35
+#define PULSADOR 22
 
 hw_timer_t * timer = NULL;
 portMUX_TYPE timerMux = portMUX_INITIALIZER_UNLOCKED;
@@ -75,26 +76,43 @@ WiFiServer server(WEB_SERVER_PORT);
 String WiFi_SSID = "";
 String WiFi_psk = "";
 
-String ApiHost = "http://192.168.0.127:5000";
+String ApiHost = "http://192.168.0.123:5000";
 
 bool WiFiPresent = false;
 
 Preferences preferences;
 
 void setup() {
-
+  Serial.begin(115200);
+   
+  pinMode(CURRENT,INPUT);
+  pinMode(VOLTAGE,INPUT);
+  pinMode(PULSADOR,INPUT);
+  pinMode(LED_PIN, OUTPUT);
+  digitalWrite(LED_PIN, LOW);
+  
+  if(digitalRead(PULSADOR)==0){
+    digitalWrite(LED_PIN, HIGH);
+    preferences.putString("ssid", "");
+    preferences.putString("password", "");
+    Serial.println("-------------------- CLEAN --------------------");
+    delay(10000);
+  }
+  
+  digitalWrite(LED_PIN, LOW);
+  
   Serial.begin(115200);
 
   Serial.println();
   Serial.println();
   Serial.println("--------------------");
-  Serial.println("WiFi Provisioning ESP32 Software Demo");
+  Serial.println("WiFi Provisioning ESP32 for Enerfi");
   Serial.println("--------------------");
-  Serial.println("Version: 1.0");
+  Serial.println("Version: 2.0");
 
   preferences.begin("credentials", false);
-//  preferences.putString("ssid", "");
-//  preferences.putString("password", "");
+//  preferences.putString("ssid", "GFM_PA");
+//  preferences.putString("password", "DC4DFD12D8");
   String ssid = preferences.getString("ssid", ""); 
   String passwd = preferences.getString("password", "");
   Serial.println("SSID guadado:" + ssid);
@@ -152,12 +170,6 @@ void setup() {
     Serial.println("-------------");
   }
 
-  pinMode(CURRENT,INPUT);
-  pinMode(VOLTAGE,INPUT);
-
-  pinMode(LED_PIN, OUTPUT);
-  digitalWrite(LED_PIN, LOW);
-
   // Configure the Prescaler at 80 the quarter of the ESP32 is cadence at 80Mhz
   // 80000000 / 80 = 1000000 tics por segundo
   timer = timerBegin(0, 80, true);                
@@ -172,6 +184,13 @@ void setup() {
 
 //Main
 void loop(){
+  if(digitalRead(PULSADOR)==0){
+    digitalWrite(LED_PIN, HIGH);
+    preferences.putString("ssid", "");
+    preferences.putString("password", "");
+    delay(10000);
+  }
+  
 //  Serial.println("Inicio de LOOP");
 //  delay(10000);
   if (count == 1) {
@@ -180,7 +199,6 @@ void loop(){
     count--;
     portEXIT_CRITICAL(&timerMux);
 
-    digitalWrite(LED_PIN, HIGH);
     digitalWrite(LED_PIN, LOW);
 
     //Guardo lecturas cada T = 1 / 5KHz mientras el ventaneo este activo
@@ -215,8 +233,6 @@ void buildMessage(){
   JsonArray voltageList = doc.createNestedArray("voltage");
   
   doc["mac"] = WiFi.macAddress();
-  Serial.println("Inicio de Txx......");
-  Serial.println("Current;Voltage");
   for (a=0;a<window_ticks;a++){
     currentList.add(adc_current[a]);
 //    Serial.print(adc_current[a]);
@@ -224,9 +240,6 @@ void buildMessage(){
     voltageList.add(adc_voltage[a]);
 //    Serial.println(adc_voltage[a]);
   }
-
-//  Serial.println("Largo de currentList: "+currentList.size());
-  Serial.println("Largo de currentList: ");
   Serial.println("Fin de Txx......");
   
 
@@ -236,7 +249,7 @@ void buildMessage(){
   doc.clear();
   flag_ventaneo=0;        //hago que vuelva a leer el adc
   flag_tx=0;              //flag para apagar tx
-  delay(2000);
+//  delay(2000);
 //  delay(10000);
 //  delay(10000);
 //  delay(10000);

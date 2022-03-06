@@ -76,7 +76,7 @@ WiFiServer server(WEB_SERVER_PORT);
 String WiFi_SSID = "";
 String WiFi_psk = "";
 
-String ApiHost = "http://192.168.0.123:5000";
+String ApiHost = "http://192.168.0.134:5000";
 
 bool WiFiPresent = false;
 
@@ -84,6 +84,7 @@ Preferences preferences;
 
 void setup() {
   Serial.begin(115200);
+  preferences.begin("credentials", false);
    
   pinMode(CURRENT,INPUT);
   pinMode(VOLTAGE,INPUT);
@@ -95,13 +96,15 @@ void setup() {
     digitalWrite(LED_PIN, HIGH);
     preferences.putString("ssid", "");
     preferences.putString("password", "");
-    Serial.println("-------------------- CLEAN --------------------");
+    Serial.println("-------------------- CLEAN 1 --------------------");
+    preferences.putString("ssid", "");
+    preferences.putString("password", "");
+    String ssid = preferences.getString("ssid", ""); 
+    String passwd = preferences.getString("password", "");
     delay(10000);
   }
   
   digitalWrite(LED_PIN, LOW);
-  
-  Serial.begin(115200);
 
   Serial.println();
   Serial.println();
@@ -110,13 +113,27 @@ void setup() {
   Serial.println("--------------------");
   Serial.println("Version: 2.0");
 
-  preferences.begin("credentials", false);
-//  preferences.putString("ssid", "GFM_PA");
-//  preferences.putString("password", "DC4DFD12D8");
+  
+  preferences.putString("ssid", "GFM_PA");
+  preferences.putString("password", "DC4DFD12D8");
   String ssid = preferences.getString("ssid", ""); 
   String passwd = preferences.getString("password", "");
   Serial.println("SSID guadado:" + ssid);
   Serial.println("PASSWD guadado:" + passwd);
+
+  if(digitalRead(PULSADOR)==0){
+    digitalWrite(LED_PIN, HIGH);
+    preferences.putString("ssid", "");
+    preferences.putString("password", "");
+    Serial.println("-------------------- CLEAN 2 --------------------");
+    preferences.putString("ssid", "");
+    preferences.putString("password", "");
+    String ssid = preferences.getString("ssid", ""); 
+    String passwd = preferences.getString("password", "");
+    Serial.println("CLEAN 2 SSID guadado:" + ssid);
+    Serial.println("CLEAN 2 PASSWD guadado:" + passwd);
+    delay(10000);
+  }
   
 
   Serial.print("Compiled at:");
@@ -177,7 +194,8 @@ void setup() {
 
   
   //Interrumpe cada 2,5KHz = 400uSeg --> X ticks * 1Meg = 400uS --> ticks= 400 
-  timerAlarmWrite(timer, 400, true);           
+  //Interrumpe cada 5KHz = 200uSeg --> X ticks * 1Meg = 200uS --> ticks= 200 
+ timerAlarmWrite(timer, 400, true);           
   timerAlarmEnable(timer);
 
 }
@@ -227,12 +245,14 @@ void loop(){
 void buildMessage(){
   String message = "";
   DynamicJsonDocument doc(81000);
+//  DynamicJsonDocument doc(170000);
 //  JsonArray currentList = doc.to<JsonArray>();
 //  JsonArray voltageList = doc.to<JsonArray>();
   JsonArray currentList = doc.createNestedArray("current");
   JsonArray voltageList = doc.createNestedArray("voltage");
   
   doc["mac"] = WiFi.macAddress();
+  Serial.println(WiFi.macAddress());
   for (a=0;a<window_ticks;a++){
     currentList.add(adc_current[a]);
 //    Serial.print(adc_current[a]);
